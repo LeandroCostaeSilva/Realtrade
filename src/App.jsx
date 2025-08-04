@@ -98,8 +98,37 @@ function App() {
     setError('')
     
     try {
-      const response = await axios.get(`http://localhost:5000/api/currency/${selectedCurrency}`)
-      const data = response.data
+      // Para GitHub Pages, usar API externa diretamente
+      const apiUrl = import.meta.env.PROD 
+        ? `https://api.exchangerate-api.com/v4/latest/${selectedCurrency.split('-')[0]}`
+        : `http://localhost:5000/api/currency/${selectedCurrency}`
+      
+      let data
+      
+      if (import.meta.env.PROD) {
+        // Produção: usar API externa
+        const response = await axios.get(apiUrl)
+        const rates = response.data.rates
+        const targetCurrency = selectedCurrency.split('-')[1]
+        
+        data = {
+          code: selectedCurrency,
+          codein: targetCurrency,
+          name: availableCurrencies[selectedCurrency],
+          high: rates[targetCurrency],
+          low: rates[targetCurrency],
+          varBid: '0',
+          pctChange: '0',
+          bid: rates[targetCurrency],
+          ask: rates[targetCurrency],
+          timestamp: Date.now(),
+          create_date: new Date().toISOString()
+        }
+      } else {
+        // Desenvolvimento: usar backend local
+        const response = await axios.get(apiUrl)
+        data = response.data
+      }
       
       setCurrencyData(data)
       
