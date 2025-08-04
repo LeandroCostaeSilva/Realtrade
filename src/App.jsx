@@ -13,19 +13,33 @@ const firebaseConfig = {
   appId: "1:76105891653:web:fe9c819eacb31ece5a882c"
 }
 
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig)
-const db = getFirestore(app)
+// Inicializar Firebase apenas em desenvolvimento
+let app = null
+let db = null
 
 // Flag para controlar se o Firebase está disponível
 let firebaseAvailable = false
 
 // Função para verificar se o Firebase está disponível
 const checkFirebaseAvailability = async () => {
+  // Desabilitar Firebase completamente em produção (GitHub Pages)
+  if (import.meta.env.PROD) {
+    firebaseAvailable = false
+    console.info('🔥 Firebase desabilitado em produção. Funcionando apenas com API externa.')
+    return false
+  }
+
   try {
+    // Inicializar Firebase apenas em desenvolvimento
+    if (!app) {
+      app = initializeApp(firebaseConfig)
+      db = getFirestore(app)
+    }
+    
     // Tenta uma operação simples para verificar conectividade
     await getDocs(query(collection(db, 'test'), limit(1)))
     firebaseAvailable = true
+    console.info('🔥 Firebase conectado com sucesso!')
     return true
   } catch (error) {
     firebaseAvailable = false
@@ -214,7 +228,11 @@ function App() {
 
       {history.length === 0 && (
         <div className="info-banner">
-          <p>📋 <strong>Histórico:</strong> Para ativar o histórico de consultas, configure o Firestore Database no <a href="https://console.firebase.google.com/project/realmoedas" target="_blank" rel="noopener noreferrer">Console do Firebase</a></p>
+          {import.meta.env.PROD ? (
+            <p>📋 <strong>Modo Produção:</strong> Histórico desabilitado. A aplicação funciona apenas com cotações em tempo real via API externa.</p>
+          ) : (
+            <p>📋 <strong>Histórico:</strong> Para ativar o histórico de consultas, configure o Firestore Database no <a href="https://console.firebase.google.com/project/realmoedas" target="_blank" rel="noopener noreferrer">Console do Firebase</a></p>
+          )}
         </div>
       )}
 
