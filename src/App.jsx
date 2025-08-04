@@ -22,7 +22,14 @@ let firebaseAvailable = false
 
 // Função para verificar se o Firebase está disponível
 const checkFirebaseAvailability = async () => {
-  // Desabilitar Firebase completamente em produção (GitHub Pages)
+  // Desabilitar Firebase completamente (tanto em produção quanto em desenvolvimento)
+  // para evitar erros de conectividade
+  firebaseAvailable = false
+  console.info('🔥 Firebase desabilitado. Funcionando apenas com API externa de cotações.')
+  return false
+
+  // Código comentado para referência futura:
+  /*
   if (import.meta.env.PROD) {
     firebaseAvailable = false
     console.info('🔥 Firebase desabilitado em produção. Funcionando apenas com API externa.')
@@ -46,6 +53,7 @@ const checkFirebaseAvailability = async () => {
     console.warn('🔥 Firebase/Firestore não está disponível. Funcionando sem histórico.')
     return false
   }
+  */
 }
 
 // Mapeamento das moedas disponíveis baseado na API
@@ -228,11 +236,7 @@ function App() {
 
       {history.length === 0 && (
         <div className="info-banner">
-          {import.meta.env.PROD ? (
-            <p>📋 <strong>Modo Produção:</strong> Histórico desabilitado. A aplicação funciona apenas com cotações em tempo real via API externa.</p>
-          ) : (
-            <p>📋 <strong>Histórico:</strong> Para ativar o histórico de consultas, configure o Firestore Database no <a href="https://console.firebase.google.com/project/realmoedas" target="_blank" rel="noopener noreferrer">Console do Firebase</a></p>
-          )}
+          <p>📋 <strong>Modo Simplificado:</strong> Histórico desabilitado. A aplicação funciona com cotações em tempo real via API externa.</p>
         </div>
       )}
 
