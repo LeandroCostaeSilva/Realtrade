@@ -37,6 +37,14 @@ export const saveQuotationHistory = async (quotationData) => {
     return docRef.id;
   } catch (error) {
     console.error("Erro ao salvar histórico: ", error);
+    
+    // Se for erro de conexão, não propagar o erro para não quebrar a aplicação
+    if (error.code === 'unavailable' || error.code === 'deadline-exceeded' || 
+        error.message?.includes('ERR_ABORTED') || error.message?.includes('network')) {
+      console.warn("Erro de conexão com Firebase - histórico não salvo, mas aplicação continua funcionando");
+      return null;
+    }
+    
     throw error;
   }
 };
@@ -67,6 +75,14 @@ export const getQuotationHistory = async (limitResults = 50) => {
     return history;
   } catch (error) {
     console.error("Erro ao buscar histórico: ", error);
+    
+    // Se for erro de conexão, retornar array vazio para não quebrar a aplicação
+    if (error.code === 'unavailable' || error.code === 'deadline-exceeded' || 
+        error.message?.includes('ERR_ABORTED') || error.message?.includes('network')) {
+      console.warn("Erro de conexão com Firebase - retornando histórico vazio");
+      return [];
+    }
+    
     throw error;
   }
 };
@@ -101,6 +117,14 @@ export const getCurrencyHistory = async (currencyCode, limitResults = 20) => {
     return history;
   } catch (error) {
     console.error("Erro ao buscar histórico da moeda: ", error);
+    
+    // Se for erro de conexão, retornar array vazio para não quebrar a aplicação
+    if (error.code === 'unavailable' || error.code === 'deadline-exceeded' || 
+        error.message?.includes('ERR_ABORTED') || error.message?.includes('network')) {
+      console.warn("Erro de conexão com Firebase - retornando histórico vazio para a moeda");
+      return [];
+    }
+    
     throw error;
   }
 };
