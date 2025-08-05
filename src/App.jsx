@@ -122,12 +122,33 @@ function App() {
 
   const formatCurrency = (value, currency) => {
     const numValue = parseFloat(value)
+    
     if (currency.includes('BRL')) {
+      // Para valores muito pequenos (menores que 0.01), usar mais casas decimais
+      if (numValue < 0.01 && numValue > 0) {
+        return numValue.toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+          minimumFractionDigits: 6,
+          maximumFractionDigits: 6
+        })
+      }
       return numValue.toLocaleString('pt-BR', {
         style: 'currency',
         currency: 'BRL'
       })
     }
+    
+    // Para outras moedas, também verificar valores pequenos
+    if (numValue < 0.01 && numValue > 0) {
+      return numValue.toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 6,
+        maximumFractionDigits: 6
+      })
+    }
+    
     return numValue.toLocaleString('en-US', {
       style: 'currency',
       currency: 'USD'
