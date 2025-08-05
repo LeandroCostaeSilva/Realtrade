@@ -1,59 +1,24 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import { initializeApp } from 'firebase/app'
-import { getFirestore, collection, addDoc, getDocs, orderBy, query, limit } from 'firebase/firestore'
-
-// Configuração do Firebase - Projeto 'realmoedas'
-const firebaseConfig = {
-  apiKey: "AIzaSyCw40QpKPbnceBxYnfNYO3XkPU_DEKjUWU",
-  authDomain: "realmoedas.firebaseapp.com",
-  projectId: "realmoedas",
-  storageBucket: "realmoedas.firebasestorage.app",
-  messagingSenderId: "76105891653",
-  appId: "1:76105891653:web:fe9c819eacb31ece5a882c"
-}
-
-// Inicializar Firebase apenas em desenvolvimento
-let app = null
-let db = null
+import { saveQuotationHistory } from './services/historyService'
+import QuotationHistory from './components/QuotationHistory'
 
 // Flag para controlar se o Firebase está disponível
-let firebaseAvailable = false
+let firebaseAvailable = true
 
 // Função para verificar se o Firebase está disponível
 const checkFirebaseAvailability = async () => {
-  // Desabilitar Firebase completamente (tanto em produção quanto em desenvolvimento)
-  // para evitar erros de conectividade
-  firebaseAvailable = false
-  console.info('🔥 Firebase desabilitado. Funcionando apenas com API externa de cotações.')
-  return false
-
-  // Código comentado para referência futura:
-  /*
-  if (import.meta.env.PROD) {
-    firebaseAvailable = false
-    console.info('🔥 Firebase desabilitado em produção. Funcionando apenas com API externa.')
-    return false
-  }
-
   try {
-    // Inicializar Firebase apenas em desenvolvimento
-    if (!app) {
-      app = initializeApp(firebaseConfig)
-      db = getFirestore(app)
-    }
-    
-    // Tenta uma operação simples para verificar conectividade
-    await getDocs(query(collection(db, 'test'), limit(1)))
+    // Tentar importar e inicializar Firebase
+    const { db } = await import('./firebase')
     firebaseAvailable = true
     console.info('🔥 Firebase conectado com sucesso!')
     return true
   } catch (error) {
     firebaseAvailable = false
-    console.warn('🔥 Firebase/Firestore não está disponível. Funcionando sem histórico.')
+    console.warn('🔥 Firebase/Firestore não está disponível. Funcionando sem histórico.', error)
     return false
   }
-  */
 }
 
 // Mapeamento das moedas disponíveis baseado na API
@@ -80,40 +45,10 @@ function App() {
   const [currencyData, setCurrencyData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [history, setHistory] = useState([])
-
-  // Carregar histórico do Firebase
+  // Verificar disponibilidade do Firebase na inicialização
   useEffect(() => {
-    initializeFirebase()
+    checkFirebaseAvailability()
   }, [])
-
-  const initializeFirebase = async () => {
-    const isAvailable = await checkFirebaseAvailability()
-    if (isAvailable) {
-      loadHistory()
-    }
-  }
-
-  const loadHistory = async () => {
-    if (!firebaseAvailable) return
-    
-    try {
-      const q = query(
-        collection(db, 'currency_queries'),
-        orderBy('timestamp', 'desc'),
-        limit(10)
-      )
-      const querySnapshot = await getDocs(q)
-      const historyData = []
-      querySnapshot.forEach((doc) => {
-        historyData.push({ id: doc.id, ...doc.data() })
-      })
-      setHistory(historyData)
-    } catch (error) {
-      console.error('Erro ao carregar histórico do Firebase:', error)
-      firebaseAvailable = false
-    }
-  }
 
   const fetchCurrencyData = async () => {
     setLoading(true)
@@ -157,14 +92,17 @@ function App() {
       // Tentar salvar consulta no Firebase (apenas se disponível)
       if (firebaseAvailable) {
         try {
-          await addDoc(collection(db, 'currency_queries'), {
-            currency: selectedCurrency,
-            data: data,
-            timestamp: new Date().toISOString()
+          await saveQuotationHistory({
+            code: data.code,
+            name: data.name,
+            bid: data.bid,
+            ask: data.ask,
+            varBid: data.varBid,
+            pctChange: data.pctChange,
+            high: data.high,
+            low: data.low
           })
-          
-          // Recarregar histórico apenas se salvou com sucesso
-          loadHistory()
+          console.log('✅ Cotação salva no histórico com sucesso!')
         } catch (firebaseError) {
           console.error('Erro ao salvar no Firebase:', firebaseError)
           firebaseAvailable = false
@@ -234,9 +172,9 @@ function App() {
         </div>
       )}
 
-      {history.length === 0 && (
+      {!firebaseAvailable && (
         <div className="info-banner">
-          <p>📋 <strong>Modo Simplificado:</strong> Histórico desabilitado. A aplicação funciona com cotações em tempo real via API externa.</p>
+          <p>📋 <strong>Modo Simplificado:</strong> Firebase não disponível. A aplicação funciona com cotações em tempo real via API externa.</p>
         </div>
       )}
 
@@ -324,29 +262,8 @@ function App() {
           </div>
         )}
 
-        {history.length > 0 && (
-          <div style={{ marginTop: '30px' }}>
-            <h3>Histórico de Consultas</h3>
-            <table className="currency-table">
-              <thead>
-                <tr>
-                  <th>Moeda</th>
-                  <th>Valor</th>
-                  <th>Data da Consulta</th>
-                </tr>
-              </thead>
-              <tbody>
-                {history.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.currency}</td>
-                    <td>{formatCurrency(item.data.bid, item.currency)}</td>
-                    <td>{formatDate(item.timestamp)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        {/* Componente de Histórico do Firebase */}
+        {firebaseAvailable && <QuotationHistory />}
       </div>
     </div>
   )
