@@ -57,8 +57,17 @@ function App() {
     try {
       let data
       
-      if (import.meta.env.PROD) {
-        // Produção: usar AwesomeAPI diretamente (suporta Bitcoin e outras criptomoedas)
+      // Tentar backend local primeiro, se falhar usar API externa
+      try {
+        // Tentar backend local
+        const localApiUrl = `http://localhost:5000/api/currency/${selectedCurrency}`
+        const localResponse = await axios.get(localApiUrl, { timeout: 2000 })
+        data = localResponse.data
+        console.log('✅ Usando backend local')
+      } catch (localError) {
+        console.warn('⚠️ Backend local não disponível, usando API externa:', localError.message)
+        
+        // Fallback para API externa
         const apiUrl = `https://economia.awesomeapi.com.br/json/last/${selectedCurrency}`
         const response = await axios.get(apiUrl)
         
@@ -80,14 +89,10 @@ function App() {
             timestamp: currencyInfo.timestamp,
             create_date: currencyInfo.create_date
           }
+          console.log('✅ Usando API externa')
         } else {
           throw new Error('Par de moedas não encontrado na API')
         }
-      } else {
-        // Desenvolvimento: usar backend local
-        const apiUrl = `http://localhost:5000/api/currency/${selectedCurrency}`
-        const response = await axios.get(apiUrl)
-        data = response.data
       }
       
       setCurrencyData(data)
