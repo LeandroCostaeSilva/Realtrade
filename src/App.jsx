@@ -55,34 +55,37 @@ function App() {
     setError('')
     
     try {
-      // Para GitHub Pages, usar API externa diretamente
-      const apiUrl = import.meta.env.PROD 
-        ? `https://api.exchangerate-api.com/v4/latest/${selectedCurrency.split('-')[0]}`
-        : `http://localhost:5000/api/currency/${selectedCurrency}`
-      
       let data
       
       if (import.meta.env.PROD) {
-        // Produção: usar API externa
+        // Produção: usar AwesomeAPI diretamente (suporta Bitcoin e outras criptomoedas)
+        const apiUrl = `https://economia.awesomeapi.com.br/json/last/${selectedCurrency}`
         const response = await axios.get(apiUrl)
-        const rates = response.data.rates
-        const targetCurrency = selectedCurrency.split('-')[1]
         
-        data = {
-          code: selectedCurrency,
-          codein: targetCurrency,
-          name: availableCurrencies[selectedCurrency],
-          high: rates[targetCurrency],
-          low: rates[targetCurrency],
-          varBid: '0',
-          pctChange: '0',
-          bid: rates[targetCurrency],
-          ask: rates[targetCurrency],
-          timestamp: Date.now(),
-          create_date: new Date().toISOString()
+        // A API retorna um objeto com a chave sendo o par de moedas
+        const currencyKey = selectedCurrency.replace('-', '')
+        
+        if (response.data[currencyKey]) {
+          const currencyInfo = response.data[currencyKey]
+          data = {
+            code: currencyInfo.code,
+            codein: currencyInfo.codein,
+            name: currencyInfo.name,
+            high: currencyInfo.high,
+            low: currencyInfo.low,
+            varBid: currencyInfo.varBid,
+            pctChange: currencyInfo.pctChange,
+            bid: currencyInfo.bid,
+            ask: currencyInfo.ask,
+            timestamp: currencyInfo.timestamp,
+            create_date: currencyInfo.create_date
+          }
+        } else {
+          throw new Error('Par de moedas não encontrado na API')
         }
       } else {
         // Desenvolvimento: usar backend local
+        const apiUrl = `http://localhost:5000/api/currency/${selectedCurrency}`
         const response = await axios.get(apiUrl)
         data = response.data
       }
