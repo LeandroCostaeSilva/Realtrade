@@ -248,46 +248,111 @@ function App() {
               </div>
             </div>
 
-            <table className="currency-table">
-              <thead>
-                <tr>
-                  <th>Campo</th>
-                  <th>Valor</th>
-                  <th>Descrição</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Compra (Bid)</td>
-                  <td>{formatCurrency(currencyData.bid, selectedCurrency)}</td>
-                  <td>Valor de compra da moeda</td>
-                </tr>
-                <tr>
-                  <td>Venda (Ask)</td>
-                  <td>{formatCurrency(currencyData.ask, selectedCurrency)}</td>
-                  <td>Valor de venda da moeda</td>
-                </tr>
-                <tr>
-                  <td>Variação</td>
-                  <td style={{
+            {/* Tabela responsiva para desktop e tablets */}
+            <div className="table-container">
+              <table className="currency-table">
+                <thead>
+                  <tr>
+                    <th>Campo</th>
+                    <th>Valor</th>
+                    <th>Descrição</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Compra (Bid)</td>
+                    <td>{formatCurrency(currencyData.bid, selectedCurrency)}</td>
+                    <td>Valor de compra da moeda</td>
+                  </tr>
+                  <tr>
+                    <td>Venda (Ask)</td>
+                    <td>{formatCurrency(currencyData.ask, selectedCurrency)}</td>
+                    <td>Valor de venda da moeda</td>
+                  </tr>
+                  <tr>
+                    <td>Variação</td>
+                    <td style={{
+                      color: parseFloat(currencyData.pctChange) >= 0 ? '#28a745' : '#dc3545'
+                    }}>
+                      {currencyData.pctChange}%
+                    </td>
+                    <td>Variação percentual</td>
+                  </tr>
+                  <tr>
+                    <td>Máxima</td>
+                    <td>{formatCurrency(currencyData.high, selectedCurrency)}</td>
+                    <td>Valor máximo do dia</td>
+                  </tr>
+                  <tr>
+                    <td>Mínima</td>
+                    <td>{formatCurrency(currencyData.low, selectedCurrency)}</td>
+                    <td>Valor mínimo do dia</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Layout de cards para mobile */}
+            <div className="currency-cards">
+              <div className="currency-card">
+                <div className="currency-card-row">
+                  <span className="currency-card-label">Compra (Bid)</span>
+                  <span className="currency-card-value">{formatCurrency(currencyData.bid, selectedCurrency)}</span>
+                </div>
+                <div className="currency-card-row">
+                  <span className="currency-card-label">Descrição</span>
+                  <span className="currency-card-value">Valor de compra da moeda</span>
+                </div>
+              </div>
+
+              <div className="currency-card">
+                <div className="currency-card-row">
+                  <span className="currency-card-label">Venda (Ask)</span>
+                  <span className="currency-card-value">{formatCurrency(currencyData.ask, selectedCurrency)}</span>
+                </div>
+                <div className="currency-card-row">
+                  <span className="currency-card-label">Descrição</span>
+                  <span className="currency-card-value">Valor de venda da moeda</span>
+                </div>
+              </div>
+
+              <div className="currency-card">
+                <div className="currency-card-row">
+                  <span className="currency-card-label">Variação</span>
+                  <span className="currency-card-value" style={{
                     color: parseFloat(currencyData.pctChange) >= 0 ? '#28a745' : '#dc3545'
                   }}>
                     {currencyData.pctChange}%
-                  </td>
-                  <td>Variação percentual</td>
-                </tr>
-                <tr>
-                  <td>Máxima</td>
-                  <td>{formatCurrency(currencyData.high, selectedCurrency)}</td>
-                  <td>Valor máximo do dia</td>
-                </tr>
-                <tr>
-                  <td>Mínima</td>
-                  <td>{formatCurrency(currencyData.low, selectedCurrency)}</td>
-                  <td>Valor mínimo do dia</td>
-                </tr>
-              </tbody>
-            </table>
+                  </span>
+                </div>
+                <div className="currency-card-row">
+                  <span className="currency-card-label">Descrição</span>
+                  <span className="currency-card-value">Variação percentual</span>
+                </div>
+              </div>
+
+              <div className="currency-card">
+                <div className="currency-card-row">
+                  <span className="currency-card-label">Máxima</span>
+                  <span className="currency-card-value">{formatCurrency(currencyData.high, selectedCurrency)}</span>
+                </div>
+                <div className="currency-card-row">
+                  <span className="currency-card-label">Descrição</span>
+                  <span className="currency-card-value">Valor máximo do dia</span>
+                </div>
+              </div>
+
+              <div className="currency-card">
+                <div className="currency-card-row">
+                  <span className="currency-card-label">Mínima</span>
+                  <span className="currency-card-value">{formatCurrency(currencyData.low, selectedCurrency)}</span>
+                </div>
+                <div className="currency-card-row">
+                  <span className="currency-card-label">Descrição</span>
+                  <span className="currency-card-value">Valor mínimo do dia</span>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
